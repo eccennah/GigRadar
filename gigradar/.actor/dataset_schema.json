@@ -1,0 +1,95 @@
+{
+    "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+    "actorSpecification": 1,
+    "fields": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string", "description": "Stable job id, the same across sources and runs" },
+            "decision": {
+                "type": "string",
+                "enum": ["available", "scam_flagged", "unlikely_hireable"],
+                "description": "What the agent decided"
+            },
+            "role": { "type": "string" },
+            "company": { "type": "string" },
+            "salary_range": { "type": ["string", "null"] },
+            "location": { "type": "string" },
+            "remote_type": { "type": "string", "enum": ["remote", "hybrid", "onsite"] },
+            "application_method": { "type": "string" },
+            "source": { "type": "string" },
+            "url": { "type": ["string", "null"] },
+            "hireability_score": {
+                "type": "integer",
+                "description": "0-100: can someone in Nigeria realistically be hired"
+            },
+            "scam_risk_score": { "type": "integer", "description": "0-100: likelihood the listing is a scam" },
+            "scam_reasons": { "type": "array", "items": { "type": "string" } },
+            "hireability_reasons": { "type": "array", "items": { "type": "string" } },
+            "requirements": { "type": "array", "items": { "type": "string" } },
+            "raw_excerpt": { "type": "string" },
+            "posted_at": { "type": ["string", "null"] },
+            "scored_by": { "type": "string", "enum": ["rules", "rules+llm"] },
+            "created_at": { "type": "string" }
+        }
+    },
+    "views": {
+        "overview": {
+            "title": "Job feed",
+            "transformation": {
+                "fields": [
+                    "decision",
+                    "role",
+                    "company",
+                    "location",
+                    "remote_type",
+                    "salary_range",
+                    "scam_risk_score",
+                    "hireability_score",
+                    "url"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "decision": { "label": "Decision", "format": "text" },
+                    "role": { "label": "Role", "format": "text" },
+                    "company": { "label": "Company", "format": "text" },
+                    "location": { "label": "Location", "format": "text" },
+                    "remote_type": { "label": "Work type", "format": "text" },
+                    "salary_range": { "label": "Salary", "format": "text" },
+                    "scam_risk_score": { "label": "Scam risk", "format": "number" },
+                    "hireability_score": { "label": "Hireability", "format": "number" },
+                    "url": { "label": "Link", "format": "link" }
+                }
+            }
+        },
+        "reasons": {
+            "title": "Why (scores and reasons)",
+            "transformation": {
+                "fields": [
+                    "decision",
+                    "role",
+                    "company",
+                    "scam_risk_score",
+                    "scam_reasons",
+                    "hireability_score",
+                    "hireability_reasons",
+                    "scored_by"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "decision": { "label": "Decision", "format": "text" },
+                    "role": { "label": "Role", "format": "text" },
+                    "company": { "label": "Company", "format": "text" },
+                    "scam_risk_score": { "label": "Scam risk", "format": "number" },
+                    "scam_reasons": { "label": "Scam reasons", "format": "array" },
+                    "hireability_score": { "label": "Hireability", "format": "number" },
+                    "hireability_reasons": { "label": "Hireability reasons", "format": "array" },
+                    "scored_by": { "label": "Scored by", "format": "text" }
+                }
+            }
+        }
+    }
+}

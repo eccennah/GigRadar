@@ -1,0 +1,31 @@
+{
+	"name": "gigradar-discovery",
+	"version": "0.0.1",
+	"type": "module",
+	"description": "GigRadar Discovery Agent - job discovery with scam-risk and hireability scoring.",
+	"engines": {
+		"node": ">=22"
+	},
+	"dependencies": {
+		"@crawlee/cheerio": "^3.15.3",
+		"apify": "^3.7.0",
+		"cheerio": "1.0.0-rc.12"
+	},
+	"devDependencies": {
+		"@apify/eslint-config": "^2.0.0",
+		"eslint": "^9.29.0",
+		"eslint-config-prettier": "^10.1.5",
+		"prettier": "^3.5.3",
+		"vitest": "^5.0.0"
+	},
+	"scripts": {
+		"start": "node --env-file-if-exists=.env ./src/main.js",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"lint": "eslint",
+		"lint:fix": "eslint --fix",
+		"test": "vitest run"
+	},
+	"author": "It's not you it's me",
+	"license": "ISC"
+}

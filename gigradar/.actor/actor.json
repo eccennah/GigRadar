@@ -1,0 +1,19 @@
+{
+	"$schema": "https://apify.com/schemas/v1/actor.ide.json",
+	"actorSpecification": 1,
+	"name": "gigradar",
+	"title": "GigRadar: AI job-search agent for Nigeria",
+	"description": "An autonomous agent that finds safe jobs you can actually get, tracks your applications, schedules interviews with prep briefs, and tailors your resume without inventing experience.",
+	"version": "0.0",
+	"buildTag": "latest",
+	"meta": {
+		"templateId": "js-empty",
+		"generatedBy": "Claude Code with Claude Opus 5.5"
+	},
+	"inputSchema": "./input_schema.json",
+	"outputSchema": "./output_schema.json",
+	"storages": {
+		"dataset": "./dataset_schema.json"
+	},
+	"dockerfile": "../Dockerfile"
+}

@@ -1,0 +1,23 @@
+# Secrets - never commit these, in any folder
+.env
+.env.*
+!.env.example
+google-oauth-client.json
+*client_secret*.json
+*.session
+telegram-session*
+
+# Local run data and dependencies
+node_modules/
+storage/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+
+# folders
+
+.agents/
+.claude/
+.gigradar-discovery/

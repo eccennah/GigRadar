@@ -1,0 +1,233 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "GigRadar input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "goal": {
+            "title": "What should GigRadar do?",
+            "type": "string",
+            "editor": "textarea",
+            "description": "Optional, in your own words, e.g. \"I have an interview next week, get me ready\" or \"find me remote frontend jobs\". The agent decides which tools to use."
+        },
+        "targetRole": {
+            "title": "Target role",
+            "type": "string",
+            "description": "The job you are looking for, e.g. \"frontend developer\" or \"accountant\". The agent uses it to decide which job boards and categories to search.",
+            "editor": "textfield",
+            "prefill": "frontend developer"
+        },
+        "location": {
+            "title": "Your location",
+            "type": "string",
+            "description": "Where you live. Used to pick city pages and to judge whether you can realistically be hired.",
+            "editor": "textfield",
+            "default": "Nigeria",
+            "prefill": "Lagos, Nigeria"
+        },
+        "remotePreference": {
+            "title": "Remote preference",
+            "type": "string",
+            "description": "Whether you want remote, hybrid or on-site work.",
+            "editor": "select",
+            "enum": [
+                "any",
+                "remote",
+                "hybrid",
+                "onsite"
+            ],
+            "enumTitles": [
+                "Any",
+                "Remote",
+                "Hybrid",
+                "On-site"
+            ],
+            "default": "any"
+        },
+        "pastedJobs": {
+            "title": "Pasted job posts",
+            "type": "array",
+            "description": "Job posts from WhatsApp, Telegram job channels, flyers or anywhere else, one per item. Each gets a scam-risk and hireability score with reasons.",
+            "editor": "stringList",
+            "default": [],
+            "sectionCaption": "Job posts to check"
+        },
+        "messages": {
+            "title": "Pasted or forwarded messages",
+            "type": "array",
+            "description": "Emails or chat messages about your applications. Each item is either the message text, or an object: {\"from\": \"talent@company.com\", \"subject\": \"...\", \"date\": \"2026-09-20\", \"body\": \"...\", \"direction\": \"inbound\" or \"outbound\", \"channel\": \"email\" or \"telegram\"}.",
+            "editor": "json",
+            "default": [],
+            "sectionCaption": "Your applications"
+        },
+        "applications": {
+            "title": "Applications you sent",
+            "type": "array",
+            "description": "Applications to track even before anyone replies, so ghosting can be detected. Each item: {\"company\": \"Korapay\", \"role\": \"Frontend Developer\", \"applied_on\": \"2026-09-01\", \"job_id\": \"optional id from GigRadar Discovery\"}.",
+            "editor": "json",
+            "default": []
+        },
+        "readGmail": {
+            "title": "Read my Gmail",
+            "type": "boolean",
+            "description": "Read job-related emails (received and sent) since the last run. Requires the GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REFRESH_TOKEN environment variables.",
+            "default": false
+        },
+        "resumeText": {
+            "title": "Your resume",
+            "type": "string",
+            "description": "Paste your full resume as plain text. The agent only rewords what is already here and never adds experience you do not have.",
+            "editor": "textarea",
+            "sectionCaption": "Resume tailoring"
+        },
+        "jobText": {
+            "title": "Job description",
+            "type": "string",
+            "description": "Optional: a job description to tailor your resume to. The agent also tailors to the best jobs it finds.",
+            "editor": "textarea"
+        },
+        "jobTitle": {
+            "title": "Job title",
+            "type": "string",
+            "description": "Optional, for pasted jobs.",
+            "editor": "textfield"
+        },
+        "jobCompany": {
+            "title": "Company",
+            "type": "string",
+            "description": "Optional, for pasted jobs.",
+            "editor": "textfield"
+        },
+        "useLlm": {
+            "title": "Use AI (LLM)",
+            "type": "boolean",
+            "default": true,
+            "sectionCaption": "Advanced",
+            "description": "Let the LLM configured in LLM_API_KEY, LLM_BASE_URL and LLM_MODEL decide which tools to run and help with unclear cases. Without it (or if the provider is down), a rule-based planner makes the decisions."
+        },
+        "maxSteps": {
+            "title": "Max agent steps",
+            "type": "integer",
+            "default": 8,
+            "minimum": 1,
+            "maximum": 20,
+            "description": "How many decisions the LLM orchestrator may make in one run."
+        },
+        "maxTailoredJobs": {
+            "title": "Max resumes tailored per run",
+            "type": "integer",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 10,
+            "description": "The agent tailors your resume to the best matches it finds, up to this many."
+        },
+        "maxLlmCalls": {
+            "title": "Max LLM calls per run",
+            "type": "integer",
+            "description": "The LLM is only asked about listings the rules are unsure of (pasted text, warning signs, unclear hireability). This caps how many calls one run can make, to stay inside free-tier quotas.",
+            "default": 10,
+            "minimum": 0,
+            "maximum": 500
+        },
+        "maxPagesPerSource": {
+            "title": "Listing pages per source",
+            "type": "integer",
+            "description": "How many listing pages (categories, cities, remote board) to read from each job board.",
+            "default": 2,
+            "minimum": 1,
+            "maximum": 6
+        },
+        "maxJobsPerSource": {
+            "title": "Max jobs per source",
+            "type": "integer",
+            "description": "Maximum number of job listings to check from each job board.",
+            "default": 20,
+            "minimum": 1,
+            "maximum": 200
+        },
+        "scamRiskThreshold": {
+            "title": "Scam-risk threshold",
+            "type": "integer",
+            "description": "Listings with a scam-risk score at or above this are flagged and kept out of the available feed.",
+            "default": 60,
+            "minimum": 0,
+            "maximum": 100
+        },
+        "hireabilityThreshold": {
+            "title": "Hireability threshold",
+            "type": "integer",
+            "description": "Listings with a hireability score below this are marked as unlikely to hire someone based in Nigeria.",
+            "default": 40,
+            "minimum": 0,
+            "maximum": 100
+        },
+        "includeSuppressed": {
+            "title": "Include flagged and unlikely jobs in output",
+            "type": "boolean",
+            "description": "Keep scam-flagged and unlikely-hireable listings in the dataset (marked by the \"decision\" field). Turn off to output only available jobs.",
+            "default": true
+        },
+        "onlyMatchingRoles": {
+            "title": "Only jobs in my field",
+            "type": "boolean",
+            "description": "Drop job-board listings that are not in the same field as your target role (e.g. a Secretary role when you search for \"frontend developer\"). Dropped listings are not charged. Pasted posts are always checked.",
+            "default": true
+        },
+        "ghostedAfterDays": {
+            "title": "Ghosted after (days)",
+            "type": "integer",
+            "description": "An application with no reply for this many days is flagged as ghosted.",
+            "default": 14,
+            "minimum": 1,
+            "maximum": 120
+        },
+        "createCalendarEvents": {
+            "title": "Add interviews to Google Calendar",
+            "type": "boolean",
+            "description": "Create a calendar event with reminders (1 day and 1 hour before) for each interview. Without Google connected, an .ics calendar file is created instead, which any calendar app can open.",
+            "default": true
+        },
+        "timeZone": {
+            "title": "Your time zone",
+            "type": "string",
+            "description": "Used for interview times that do not state a time zone.",
+            "editor": "textfield",
+            "default": "Africa/Lagos"
+        },
+        "gmailLookbackDays": {
+            "title": "Gmail: days to look back on the first run",
+            "type": "integer",
+            "description": "After the first run, only new emails are read.",
+            "default": 30,
+            "minimum": 1,
+            "maximum": 365
+        },
+        "seenJobsStoreName": {
+            "title": "Seen-jobs store name",
+            "type": "string",
+            "description": "Named key-value store that remembers jobs across runs, so reposts are not delivered or charged twice.",
+            "editor": "textfield",
+            "default": "gigradar-agent-seen-jobs"
+        },
+        "resetSeenJobs": {
+            "title": "Forget previously seen jobs",
+            "type": "boolean",
+            "description": "Start this run with an empty seen-jobs memory.",
+            "default": false
+        },
+        "applicationsStoreName": {
+            "title": "Applications store name",
+            "type": "string",
+            "description": "Named key-value store that keeps your application records between runs.",
+            "editor": "textfield",
+            "default": "gigradar-agent-applications"
+        },
+        "resetApplications": {
+            "title": "Forget all application records",
+            "type": "boolean",
+            "description": "Start this run with no application history.",
+            "default": false
+        }
+    },
+    "required": []
+}

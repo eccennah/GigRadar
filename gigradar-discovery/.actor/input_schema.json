@@ -1,0 +1,124 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "GigRadar Discovery Agent input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "targetRole": {
+            "title": "Target role",
+            "type": "string",
+            "description": "The job you are looking for, e.g. \"frontend developer\" or \"accountant\". The agent uses it to decide which job boards and categories to search.",
+            "editor": "textfield",
+            "prefill": "frontend developer"
+        },
+        "location": {
+            "title": "Your location",
+            "type": "string",
+            "description": "Where you live. Used to pick city pages and to judge whether you can realistically be hired.",
+            "editor": "textfield",
+            "default": "Nigeria",
+            "prefill": "Lagos, Nigeria"
+        },
+        "remotePreference": {
+            "title": "Remote preference",
+            "type": "string",
+            "description": "Whether you want remote, hybrid or on-site work.",
+            "editor": "select",
+            "enum": ["any", "remote", "hybrid", "onsite"],
+            "enumTitles": ["Any", "Remote", "Hybrid", "On-site"],
+            "default": "any"
+        },
+        "pastedJobs": {
+            "title": "Pasted job posts",
+            "type": "array",
+            "description": "Raw job posts from WhatsApp, Telegram, flyers or anywhere else, one per item. They go through the same scam and hireability checks.",
+            "editor": "stringList",
+            "default": []
+        },
+        "sources": {
+            "title": "Limit sources",
+            "type": "array",
+            "description": "Leave empty to let the agent choose sources for your role. Otherwise only these are used.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": ["jobberman", "myjobmag", "pasted"],
+                "enumTitles": ["Jobberman", "MyJobMag", "Pasted job posts"]
+            },
+            "default": [],
+            "sectionCaption": "Advanced"
+        },
+        "maxPagesPerSource": {
+            "title": "Listing pages per source",
+            "type": "integer",
+            "description": "How many listing pages (categories, cities, remote board) to read from each job board.",
+            "default": 2,
+            "minimum": 1,
+            "maximum": 6
+        },
+        "maxJobsPerSource": {
+            "title": "Max jobs per source",
+            "type": "integer",
+            "description": "Maximum number of job listings to check from each job board.",
+            "default": 20,
+            "minimum": 1,
+            "maximum": 200
+        },
+        "scamRiskThreshold": {
+            "title": "Scam-risk threshold",
+            "type": "integer",
+            "description": "Listings with a scam-risk score at or above this are flagged and kept out of the available feed.",
+            "default": 60,
+            "minimum": 0,
+            "maximum": 100
+        },
+        "hireabilityThreshold": {
+            "title": "Hireability threshold",
+            "type": "integer",
+            "description": "Listings with a hireability score below this are marked as unlikely to hire someone based in Nigeria.",
+            "default": 40,
+            "minimum": 0,
+            "maximum": 100
+        },
+        "includeSuppressed": {
+            "title": "Include flagged and unlikely jobs in output",
+            "type": "boolean",
+            "description": "Keep scam-flagged and unlikely-hireable listings in the dataset (marked by the \"decision\" field). Turn off to output only available jobs.",
+            "default": true
+        },
+        "onlyMatchingRoles": {
+            "title": "Only jobs in my field",
+            "type": "boolean",
+            "description": "Drop job-board listings that are not in the same field as your target role (e.g. a Secretary role when you search for \"frontend developer\"). Dropped listings are not charged. Pasted posts are always checked.",
+            "default": true
+        },
+        "useLlm": {
+            "title": "Use LLM",
+            "type": "boolean",
+            "description": "Use the LLM configured in the LLM_API_KEY, LLM_BASE_URL and LLM_MODEL environment variables for extraction and a second scoring opinion. Without it, rules only.",
+            "default": true
+        },
+        "maxLlmCalls": {
+            "title": "Max LLM calls per run",
+            "type": "integer",
+            "description": "The LLM is only asked about listings the rules are unsure of (pasted text, warning signs, unclear hireability). This caps how many calls one run can make, to stay inside free-tier quotas.",
+            "default": 10,
+            "minimum": 0,
+            "maximum": 500
+        },
+        "seenJobsStoreName": {
+            "title": "Seen-jobs store name",
+            "type": "string",
+            "description": "Named key-value store that remembers jobs across runs, so reposts are not delivered or charged twice.",
+            "editor": "textfield",
+            "default": "gigradar-seen-jobs"
+        },
+        "resetSeenJobs": {
+            "title": "Forget previously seen jobs",
+            "type": "boolean",
+            "description": "Start this run with an empty seen-jobs memory.",
+            "default": false
+        }
+    },
+    "required": []
+}
