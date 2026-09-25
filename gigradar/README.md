@@ -1,76 +1,139 @@
-## What does GigRadar do?
+# 🛡️ GigRadar — AI Job-Search Agent for Nigeria
 
-**GigRadar is an AI job-search agent for people in Nigeria.** It is not a job scraper. It is an **autonomous agent** that looks at where you are in your job search and **decides what to do next**:
+[![Apify Actor](https://img.shields.io/badge/Apify-Actor-FF9800?style=for-the-badge&logo=apify&logoColor=white)](https://apify.com)
+[![Built on Apify](https://img.shields.io/badge/Built%20on-Apify%20Platform-00B4D8?style=for-the-badge&logo=apify&logoColor=white)](https://apify.com)
+[![Pricing](https://img.shields.io/badge/Pricing-Pay%20Per%20Event-2EC4B6?style=for-the-badge)](https://apify.com)
+[![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D22-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Target Market](https://img.shields.io/badge/Target%20Region-Nigeria%20🇳🇬-008751?style=for-the-badge)](https://en.wikipedia.org/wiki/Nigeria)
+[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](./package.json)
 
-- 🛡️ **Is this job a scam?** Every job, from job boards or pasted from **WhatsApp and Telegram job channels**, gets a **scam-risk score** with reasons (upfront "registration fees", BVN requests, WhatsApp-only contact, too-good-to-be-true pay).
-- 🌍 **Can you actually get it?** A **hireability score** catches "remote, US only", visa and payment restrictions that silently block Nigeria-based applicants.
-- 📬 **Where do my applications stand?** It reads recruiter emails and messages, tracks each application (applied, interview, rejected), and flags **ghosting**. It knows "unfortunately Tuesday doesn't work, can we do Thursday?" is a **rescheduled interview**, not a rejection.
-- 📅 **Interview coming up?** It adds it to your calendar with reminders and writes a **prep brief** from the company's own website and the job's requirements.
-- ✏️ **Tailor my resume.** It rewords what you already did to match the best jobs, and **flags real gaps instead of inventing experience**. Any rewrite that adds a tool, number or skill your resume doesn't have is rejected automatically.
+> **GigRadar isn't a job scraper. It's an autonomous AI agent that decides what your job search needs next.**
 
-## How the agent works
+Every day, thousands of Nigerians scroll WhatsApp groups, Telegram channels, and job boards hunting for real opportunities — while dodging scam postings asking for "registration fees," and applying to "remote" roles that quietly exclude anyone outside the US. GigRadar sits in that mess and does the thinking for you: it checks if a job is safe, tells you if you can actually get it, tracks every application so nothing slips through ghosting, preps you for interviews, and tailors your resume — without ever inventing experience you don't have.
 
-An LLM **orchestrator** observes the current state (jobs found, open applications, interviews without a calendar entry or brief, whether you gave a resume) and **chooses which tool to call next**, with what arguments, until nothing more is worth doing:
+---
 
-| Tool | What it does |
-| --- | --- |
-| `scrape_sources` | Picks the right job-board categories and city pages for your role, crawls Jobberman and MyJobMag, scores and filters every job |
-| `score_job` | Scores job posts you pasted (WhatsApp, Telegram channels, flyers) |
-| `check_email` | Reads pasted messages (and Gmail when connected), updates application status, detects ghosting |
-| `schedule_calendar` | Adds an interview to Google Calendar, or creates a calendar file any phone can open |
-| `research_company` | Researches the company and writes an interview-prep brief |
-| `tailor_resume` | Tailors your resume to one job, honestly |
+## 🎯 The Problem
 
-Every decision is written to the **`AGENT_LOG`** record, so you can see what the agent chose and why. If the LLM provider is down, a **rule-based planner** makes the decisions from the same state, so a run never fails.
+- **Scams are rampant on informal job channels.** Upfront fees, BVN requests, WhatsApp-only "recruiters" — these prey on job seekers with the least room to lose money.
+- **"Remote" often isn't remote for Nigerians.** Visa, country-of-residence, and payment gateway restrictions silently block qualified applicants, and most job seekers only find out after wasting hours applying.
+- **Job searching is heavily fragmented.** Finding, verifying, tracking, scheduling, preparing, and tailoring are five different jobs most people juggle manually across five different apps.
 
-## Why GigRadar?
+GigRadar collapses all five into **one autonomous agent**.
 
-- **Job scams are common** on informal channels. GigRadar checks a post before you pay anyone anything.
-- **"Remote" often isn't remote for Nigerians.** GigRadar tells you before you apply.
-- **One agent for the whole search**: finding, checking, tracking, scheduling, preparing and tailoring.
-- **Built on Apify**: schedule it every morning, call it from your own app through the API, and keep your jobs and applications in Apify storage between runs.
+---
 
-## How much does it cost?
+## 🧠 How It Works
 
-GigRadar uses **pay per event**. You only pay when the agent delivers something:
+An **LLM orchestrator** inspects the current state of your job search — jobs found, open applications, pending interviews without calendar entries or briefs, and whether you've provided a resume — and **decides which tool to call next**, with what arguments, until nothing more is worth doing.
 
-| Event | When |
-| --- | --- |
-| `job_normalized` | A safe, hireable job in your field reached your feed |
-| `scam_flag_issued` | A job was flagged as a likely scam |
-| `status_change_detected` | An application changed state (applied, interview, rejected, ghosted) |
-| `interview_scheduled` | An interview was added to your calendar |
-| `interview_prep_generated` | An interview-prep brief was written |
-| `resume_tailored` | Your resume was tailored to a job |
+```mermaid
+flowchart TD
+    Start([User Starts Actor]) --> InputState[Read Actor Input & Persistent Key-Value Stores]
+    InputState --> Orchestrator{LLM Orchestrator / Fallback Rule Planner}
+    
+    Orchestrator -->|Jobs need scraping| ToolScrape[scrape_sources]
+    Orchestrator -->|Pasted post provided| ToolScore[score_job]
+    Orchestrator -->|Messages / emails detected| ToolEmail[check_email]
+    Orchestrator -->|Interview needs booking| ToolCal[schedule_calendar]
+    Orchestrator -->|Interview needs research| ToolResearch[research_company]
+    Orchestrator -->|High-match job + Resume| ToolTailor[tailor_resume]
 
-Duplicates, reposts, jobs outside your field and messages that change nothing are free. See the **Pricing** tab.
+    ToolScrape --> EvalState[Update Search State & Apify Storage]
+    ToolScore --> EvalState
+    ToolEmail --> EvalState
+    ToolCal --> EvalState
+    ToolResearch --> EvalState
+    ToolTailor --> EvalState
 
-## How to use it
+    EvalState --> DoneCheck{More tools needed?}
+    DoneCheck -->|Yes| Orchestrator
+    DoneCheck -->|No| Finish([Complete Run: Save AGENT_LOG & Summary])
+```
 
-1. Enter your **target role**, **location** and **remote preference**.
-2. Paste job posts you want checked, recruiter messages, and your resume. All optional.
-3. Optionally tell it what you want in **What should GigRadar do?**
-4. Click **Start**. Results are in the dataset (`record_type`: `job`, `application` or `tailoring`); calendar files, prep briefs, tailored resumes and the `AGENT_LOG` are in the key-value store.
+### Dual-Engine Resilience
 
-You can download the dataset in various formats such as JSON, HTML, CSV, or Excel.
+Every decision is logged to the `AGENT_LOG` key-value record, providing complete visibility into what the agent chose and why. If the configured LLM provider experiences outages or rate limits, a **deterministic rule-based planner** seamlessly takes over from the exact same state — **a run never just fails**.
 
-## Setup for the AI and Google features
+---
 
-- **LLM (optional):** set `LLM_API_KEY` (secret), `LLM_BASE_URL` and `LLM_MODEL` on the Actor. Any OpenAI-compatible provider works, including Google AI Studio's free tier: GigRadar only calls the LLM when rules are unsure and caps calls per run.
-- **Gmail and Calendar (optional):** run `node scripts/google-auth.mjs` once, then add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN` (secrets). GigRadar asks for read-only Gmail and permission to create calendar events. It never sends email.
+## 🛠️ Agent Tooling System
 
-## FAQ
+| Tool | What It Does | Why It Matters |
+|---|---|---|
+| `scrape_sources` | Dynamically picks job-board categories and city pages based on your role, crawls [Jobberman](https://www.jobberman.com) and [MyJobMag](https://www.myjobmag.com), scores and filters every listing. | Discovers active, genuine Nigerian roles without manual page-by-page browsing. |
+| `score_job` | Evaluates job posts you paste in from WhatsApp groups, Telegram channels, flyers, or SMS. | Exposes "interview registration fee" scams and BVN phishing before you respond. |
+| `check_email` | Reads pasted messages (or Gmail via OAuth), extracts status updates, and catches ghosting. | Flags rescheduling vs rejections and reminds you when recruiters go silent. |
+| `schedule_calendar` | Generates Google Calendar events with pre-interview alerts or outputs universal `.ics` calendar files. | Ensures you never miss an interview, regardless of device or timezone confusion. |
+| `research_company` | Crawls the employer's official website and synthesizes an interview-prep brief. | Equips you with company background, products, leadership, and custom talking points. |
+| `tailor_resume` | Rewrites your resume bullets to align with job requirements **strictly honestly**. | Zero hallucinated skills or tools; any modification that invents experience is automatically discarded. |
 
-### Is a low scam score a guarantee?
+---
 
-No. Scores are signals with reasons, not proof. Never pay money to get a job.
+## ⚙️ Built on Apify — Not Bolted On
 
-### Is my data shared?
+GigRadar is engineered specifically around Apify's serverless Actor platform:
 
-Your jobs, applications and resume stay in your own Apify account. If you enable the LLM, the text it reads is sent to the LLM provider you configured.
+- 🗄️ **Unified Dataset Storage** — Every processed job, tracked application, and tailored resume is pushed as a strongly-typed record (`record_type: job | application | tailoring`), exportable immediately as JSON, CSV, Excel, XML, or HTML.
+- 🗃️ **Key-Value Store Persistence** — State is preserved across runs. Generated `.ics` calendar files, markdown prep briefs (`PREP_BRIEF_*.md`), tailored resume files, and the complete `AGENT_LOG` decision trail live in Apify's Key-Value store.
+- ⏰ **Native Scheduling** — Set GigRadar on an Apify cron schedule (e.g., every morning at 7:00 AM Lagos time) to autonomously monitor listings, detect recruiter replies, and update your tracker.
+- 💰 **Pay Per Event (PPE) Monetization** — You only pay for concrete outcomes that deliver real value (a vetted job delivered, a scam flagged, a prep brief written), not idle compute time or discarded noise.
+- 🤖 **Respectful & Ethical Scraping** — Complies strictly with `robots.txt`, respects target site rate limits using Crawlee, and only interacts with publicly accessible job listings.
+- 🔌 **API & Webhook First** — Call GigRadar from Next.js, mobile apps, Slack bots, Make, or Zapier using Apify's standardized REST API.
 
-### Legal
+---
 
-GigRadar only reads pages the job boards allow in their robots.txt, at a low request rate, and only public job listings.
+## 💸 How Much Does It Cost?
 
-Found a problem? Open an issue in the **Issues** tab. To run GigRadar from your own code, see the **API** tab.
+GigRadar operates on Apify's **Pay Per Event (PPE)** pricing model. You are only billed when the agent produces a tangible, actionable result:
+
+| Billable Event | When It Fires | Description |
+|---|---|---|
+| `job_normalized` | Safe, hireable job delivered | A job passed scam filtering and Nigeria hireability checks and reached your feed. |
+| `scam_flag_issued` | Suspicious post flagged | A listing was flagged as a scam with concrete diagnostic reasons provided. |
+| `status_change_detected` | Pipeline status updated | An application changed state (applied, interview, rejected, or ghosted). |
+| `interview_scheduled` | Calendar event booked | An interview was added to Google Calendar or saved to an `.ics` file. |
+| `interview_prep_generated` | Prep brief prepared | A customized company research and interview-prep brief was generated. |
+| `resume_tailored` | Resume tailored | Your resume was honestly tailored to match a specific role's criteria. |
+
+> **Zero Waste Guarantee**: Duplicate postings, reposts, off-target roles, and messages that require no status change are **100% free**. You are never billed for scraping noise.
+
+---
+
+## 🚀 How to Use It
+
+1. Enter your **Target role** (e.g., `Frontend Developer`, `Accountant`), **Location** (e.g., `Lagos, Nigeria`), and **Remote preference**.
+2. (Optional) Paste in suspicious job posts from WhatsApp or Telegram, paste recruiter messages, and provide your current resume text.
+3. (Optional) Provide high-level guidance in **"What should GigRadar do?"** (e.g., *"Find remote React roles and prep me for my Paystack interview next week"*).
+4. Click **Start**.
+5. Results land in the **Dataset** (`record_type: job | application | tailoring`); calendar files, prep briefs, tailored resumes, and the agent execution trail land in the **Key-Value Store**.
+
+You can download the dataset in various formats including JSON, CSV, HTML, or Excel.
+
+---
+
+## 🔑 Setup for AI and Google Features (Optional)
+
+GigRadar operates out of the box with zero external configuration using its built-in rule engine. For enhanced reasoning and calendar automation:
+
+- **LLM**: Set `LLM_API_KEY` (secret), `LLM_BASE_URL`, and `LLM_MODEL`. Any OpenAI-compatible provider works — including Google AI Studio's free tier. GigRadar only calls the LLM when its rules are unsure, and caps calls per run.
+- **Gmail & Calendar**: Run `node scripts/google-auth.mjs` once, then set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REFRESH_TOKEN` (secrets). GigRadar only requests read-only Gmail access and calendar-event creation — it never sends email on your behalf.
+
+---
+
+## ❓ FAQ
+
+### Is a low scam score an absolute guarantee?
+**No.** Scam-risk scores are diagnostic signals supported by concrete heuristic checks and reasoning, not legal guarantees. Never send money, cryptocurrency, or sensitive financial information (such as BVN or credit card numbers) to any employer or recruiter.
+
+### Is my personal resume or correspondence shared?
+**No.** All jobs, applications, forwarded messages, and resumes remain isolated within your personal Apify account storages. If LLM reasoning is activated, only the specific sanitized text necessary for evaluation is transmitted to your configured LLM endpoint.
+
+### Does GigRadar send emails on my behalf?
+**Never.** The Google integration is strictly limited to read-only access for identifying job-related correspondence and write access for adding interview events to your calendar.
+
+---
+
+## 🌍 Why This Matters
+
+This system was built for the ground truth of job hunting in Nigeria — where a "remote" tag can be a geographic trap, a WhatsApp forward can be an advance-fee fraud, and job seekers deserve tooling that genuinely understands their constraints rather than a generic US job board clone.
